@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    minWidth: 200,
+    minWidth: 100,
   },
   pressed: {
     opacity: 0.8,
