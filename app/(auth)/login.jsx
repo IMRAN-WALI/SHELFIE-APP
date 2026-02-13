@@ -7,11 +7,14 @@ import ThemedButton from "../../components/ThemedButton";
 import { Colors } from "../../constants/Colors";
 import ThemedTextinput from "../../components/ThemedTextinput";
 import { useState } from "react";
+import { useUser } from "../../hooks/useUser";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { user } = useUser();
   const handleSubmit = () => {
+    console.log("Current User:", user);
     console.log("Login Form Submitted", email, password);
   };
 
