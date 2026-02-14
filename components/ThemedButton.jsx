@@ -1,13 +1,33 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 import { Colors } from "../constants/Colors";
 
-function ThemedButton({ style, children, ...props }) {
+function ThemedButton({ style, children, variant = "primary", ...props }) {
+  const backgroundStyle =
+    variant === "outline"
+      ? {
+          backgroundColor: "transparent",
+          borderWidth: 1,
+          borderColor: Colors.primary,
+        }
+      : variant === "text"
+        ? {
+            backgroundColor: "transparent",
+          }
+        : {
+            backgroundColor: Colors.primary,
+          };
+
   return (
     <Pressable
-      style={({ pressed }) => [styles.btn, pressed && styles.pressed, style]}
+      style={({ pressed }) => [
+        styles.btn,
+        backgroundStyle,
+        pressed && styles.pressed,
+        style,
+      ]}
       {...props}
     >
-      <Text style={styles.text}>{children}</Text>
+      {children}
     </Pressable>
   );
 }

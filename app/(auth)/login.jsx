@@ -1,8 +1,15 @@
-import { Keyboard, StyleSheet, TouchableWithoutFeedback } from "react-native";
+import {
+  Keyboard,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  Alert,
+  ActivityIndicator,
+  View, // 👈 IMPORT ADD KARO
+} from "react-native";
 import ThemedView from "../../components/ThemedView";
 import ThemedText from "../../components/ThemedText";
 import Spacer from "../../components/Spacer";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import ThemedButton from "../../components/ThemedButton";
 import { Colors } from "../../constants/Colors";
 import ThemedTextinput from "../../components/ThemedTextinput";
@@ -12,46 +19,122 @@ import { useUser } from "../../hooks/useUser";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { user } = useUser();
-  const handleSubmit = () => {
-    console.log("Current User:", user);
-    console.log("Login Form Submitted", email, password);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const { login } = useUser();
+
+  const handleSubmit = async () => {
+    // Validation
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const result = await login(email, password);
+
+      if (!result.success) {
+        Alert.alert("Login Failed", result.error);
+        return;
+      }
+
+      // Login successful
+      console.log("Login successful:", result.data.user);
+      router.replace("/(tabs)");
+    } catch (error) {
+      Alert.alert("Error", error.message || "An unexpected error occurred");
+      console.log("Login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ThemedView style={styles.container}>
-        <Spacer />
-        <ThemedText title style={styles.title}>
-          Login To Your Account
+        <Spacer height={50} />
+
+        <ThemedText title style={styles.welcomeText}>
+          Welcome Back! 👋
         </ThemedText>
 
+        <ThemedText style={styles.subtitle}>
+          Login to continue to your account
+        </ThemedText>
+
+        <Spacer height={30} />
+
+        {/* Email Input */}
         <ThemedTextinput
-          style={{ width: "80%", marginBottom: 20 }}
+          style={styles.input}
           placeholder="Email"
-          key="email-address"
+          keyboardType="email-address"
+          autoCapitalize="none"
           onChangeText={setEmail}
           value={email}
+          editable={!isLoading}
         />
 
+        {/* Password Input */}
         <ThemedTextinput
-          style={{ width: "80%", marginBottom: 20 }}
+          style={styles.input}
           placeholder="Password"
           onChangeText={setPassword}
           value={password}
-          secureTextEntry
+          secureTextEntry={!showPassword}
+          editable={!isLoading}
         />
 
-        <ThemedButton onPress={handleSubmit}>
-          <ThemedText style={{ color: "#f2f2f2" }}>Login</ThemedText>
+        {/* Forgot Password Link */}
+        <ThemedButton
+          variant="text"
+          onPress={() => {}}
+          style={styles.forgotPassword}
+          disabled={isLoading}
+        >
+          <ThemedText style={styles.forgotPasswordText}>
+            Forgot Password?
+          </ThemedText>
         </ThemedButton>
 
-        <Spacer height={100} />
+        {/* Login Button */}
+        <ThemedButton
+          onPress={handleSubmit}
+          disabled={isLoading}
+          style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#f2f2f2" />
+          ) : (
+            <ThemedText style={styles.loginButtonText}>Login</ThemedText>
+          )}
+        </ThemedButton>
 
-        <Link href="/(auth)/register">
-          <ThemedText style={{ textAlign: "center" }}>
-            Register Instead
-          </ThemedText>
+        <Spacer height={30} />
+
+        {/* Divider - YAHAN VIEW USE HUA HAI */}
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <ThemedText style={styles.dividerText}>OR</ThemedText>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <Spacer height={20} />
+
+        {/* Register Link */}
+        <Link href="/(auth)/register" asChild>
+          <ThemedButton
+            variant="outline"
+            style={{ backgroundColor: Colors.primary, width: "100%" }}
+            disabled={isLoading}
+          >
+            <ThemedText style={styles.registerButtonText}>
+              Create New Account
+            </ThemedText>
+          </ThemedButton>
         </Link>
       </ThemedView>
     </TouchableWithoutFeedback>
@@ -65,18 +148,76 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 20,
   },
-  title: {
+  welcomeText: {
     textAlign: "center",
-    fontSize: 20,
-    marginBottom: 30,
+    fontSize: 28,
+    marginBottom: 10,
+    fontWeight: "bold",
+    color: Colors.primary,
   },
-  btn: {
+  subtitle: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 20,
+  },
+  input: {
+    width: "100%",
+    marginBottom: 15,
+  },
+  forgotPassword: {
+    alignSelf: "flex-end",
+    marginBottom: 20,
+    padding: 5,
+  },
+  forgotPasswordText: {
+    color: Colors.primary,
+    fontSize: 14,
+  },
+  loginButton: {
+    width: "100%",
     backgroundColor: Colors.primary,
     padding: 15,
-    borderRadius: 15,
+    borderRadius: 12,
+    alignItems: "center",
   },
-  pressed: {
-    opacity: 0.8,
+  loginButtonDisabled: {
+    opacity: 0.7,
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    marginVertical: 10,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#ddd",
+  },
+  dividerText: {
+    marginHorizontal: 10,
+    color: "#999",
+    fontSize: 14,
+  },
+  registerButton: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    padding: 15,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  registerButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
   },
 });
