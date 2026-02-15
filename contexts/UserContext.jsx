@@ -10,7 +10,7 @@ export function UserProvider({ children }) {
   useEffect(() => {
     checkUser();
 
-    // Listen for auth changes
+    // Listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -28,7 +28,9 @@ export function UserProvider({ children }) {
         data: { user },
         error,
       } = await supabase.auth.getUser();
+
       if (error) throw error;
+
       setUser(user);
     } catch (error) {
       console.log("Error checking user:", error.message);
@@ -38,12 +40,14 @@ export function UserProvider({ children }) {
     }
   }
 
+  // Login
   async function login(email, password) {
     try {
       setLoading(true);
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
+        email,
+        password,
       });
 
       if (error) throw error;
@@ -58,24 +62,23 @@ export function UserProvider({ children }) {
     }
   }
 
+  // Register
   async function register(email, password, name = "") {
     try {
       setLoading(true);
+
       const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
+        email,
+        password,
         options: {
           data: {
-            name: name, // Extra user metadata
-            // Agar kuch aur chahiye to yahan add karo
+            name: name,
           },
         },
       });
 
       if (error) throw error;
 
-      // Note: Supabase mein email confirmation enable ho sakti hai
-      // Agar email confirmation on hai to user tab tak null rahega jab tak confirm na kare
       if (data.user) {
         setUser(data.user);
       }
@@ -89,10 +92,11 @@ export function UserProvider({ children }) {
     }
   }
 
-  // LOGOUT - Appwrite ke deleteSession ki jagah
+  // Logout
   async function logout() {
     try {
       setLoading(true);
+
       const { error } = await supabase.auth.signOut();
 
       if (error) throw error;
@@ -107,11 +111,11 @@ export function UserProvider({ children }) {
     }
   }
 
-  // Password Reset (optional)
+  // Reset Password Email
   async function resetPassword(email) {
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "yourapp://reset-password", // Apna deep link yahan daalo
+        redirectTo: "shelfieapp://reset-password", // ✅ Correct Deep Link
       });
 
       if (error) throw error;
@@ -123,7 +127,7 @@ export function UserProvider({ children }) {
     }
   }
 
-  // Update Profile (optional)
+  // Update Profile
   async function updateProfile(updates) {
     try {
       const { data, error } = await supabase.auth.updateUser({

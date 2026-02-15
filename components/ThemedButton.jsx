@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import { Colors } from "../constants/Colors";
 
 function ThemedButton({ style, children, variant = "primary", ...props }) {

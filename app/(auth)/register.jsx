@@ -13,16 +13,12 @@ import { Link, router } from "expo-router";
 import ThemedButton from "../../components/ThemedButton";
 import ThemedTextinput from "../../components/ThemedTextinput";
 import { useState } from "react";
-import { useUser } from "../../hooks/useUser";
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [name, setName] = useState(""); // Extra field for user metadata
   const [isLoading, setIsLoading] = useState(false);
-
-  const { register } = useUser();
 
   const handleSubmit = async () => {
     // Validation
@@ -51,9 +47,6 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      // Register with name as optional metadata
-      const result = await register(email, password, name);
-
       if (!result.success) {
         // Handle specific Supabase errors
         if (result.error.includes("User already registered")) {
@@ -101,16 +94,6 @@ const Register = () => {
           Create Account
         </ThemedText>
 
-        {/* Name field (optional) */}
-        <ThemedTextinput
-          style={{ width: "80%", marginBottom: 20 }}
-          placeholder="Full Name (Optional)"
-          onChangeText={setName}
-          value={name}
-          editable={!isLoading}
-          autoCapitalize="words"
-        />
-
         {/* Email field */}
         <ThemedTextinput
           style={{ width: "80%", marginBottom: 20 }}
@@ -155,8 +138,6 @@ const Register = () => {
             <Text style={{ color: "#f2f2f2" }}>Register</Text>
           )}
         </ThemedButton>
-
-        <Spacer height={50} />
 
         {/* Link to Login */}
         <Link href="/(auth)/login" asChild>

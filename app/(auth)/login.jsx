@@ -20,7 +20,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword] = useState(false);
 
   const { login } = useUser();
 
@@ -113,7 +113,7 @@ const Login = () => {
           )}
         </ThemedButton>
 
-        <Spacer height={30} />
+        <Spacer height={20} />
 
         {/* Divider - YAHAN VIEW USE HUA HAI */}
         <View style={styles.divider}>
@@ -200,12 +200,13 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#ddd",
+    backgroundColor: Colors.black,
   },
   dividerText: {
     marginHorizontal: 10,
-    color: "#999",
-    fontSize: 14,
+    color: Colors.black,
+    fontSize: 15,
+    fontWeight: "bold",
   },
   registerButton: {
     width: "100%",

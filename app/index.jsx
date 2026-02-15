@@ -1,11 +1,37 @@
 import { StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { useEffect } from "react";
+import * as Linking from "expo-linking";
 import Logo from "../assets/img/shelfie-2.jpg";
 import ThemedView from "../components/ThemedView";
 import ThemedLogo from "../components/ThemedLogo";
 import ThemedText from "../components/ThemedText";
 
 export default function Index() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleDeepLink = async () => {
+      const url = await Linking.getInitialURL();
+
+      if (url?.includes("reset-password")) {
+        // Reset link detect hua to login page open karo
+        router.replace("/(auth)/login");
+      }
+    };
+
+    handleDeepLink();
+
+    // App already open ho aur link aaye tab bhi handle kare
+    const subscription = Linking.addEventListener("url", (event) => {
+      if (event.url.includes("reset-password")) {
+        router.replace("/(auth)/login");
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
   return (
     <ThemedView style={styles.container}>
       <ThemedLogo source={Logo} style={styles.Img} />
