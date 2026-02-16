@@ -13,6 +13,7 @@ import { Link, router } from "expo-router";
 import ThemedButton from "../../components/ThemedButton";
 import ThemedTextinput from "../../components/ThemedTextinput";
 import { useState } from "react";
+import { supabase } from "../../lib/supabase";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -37,7 +38,6 @@ const Register = () => {
       return;
     }
 
-    // Email validation (basic)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert("Error", "Please enter a valid email address");
@@ -47,9 +47,13 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      if (!result.success) {
-        // Handle specific Supabase errors
-        if (result.error.includes("User already registered")) {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes("User already registered")) {
           Alert.alert(
             "Account Exists",
             "An account with this email already exists. Please login instead.",
@@ -59,15 +63,14 @@ const Register = () => {
             ],
           );
         } else {
-          Alert.alert("Registration Failed", result.error);
+          Alert.alert("Registration Failed", error.message);
         }
         return;
       }
 
-      // Success - show appropriate message based on email confirmation setting
       Alert.alert(
         "Registration Successful",
-        "Your account has been created successfully! Please check your email to verify your account before logging in.",
+        "Your account has been created! Please check your email to verify your account.",
         [
           {
             text: "OK",
@@ -75,11 +78,9 @@ const Register = () => {
           },
         ],
       );
-
-      console.log("Register Form Submitted", email, password);
-    } catch (error) {
-      Alert.alert("Error", error.message || "An unexpected error occurred");
-      console.log("Register error:", error);
+    } catch (err) {
+      Alert.alert("Error", "Something went wrong. Please try again.");
+      console.log("Register error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +95,6 @@ const Register = () => {
           Create Account
         </ThemedText>
 
-        {/* Email field */}
         <ThemedTextinput
           style={{ width: "80%", marginBottom: 20 }}
           placeholder="Email"
@@ -105,7 +105,6 @@ const Register = () => {
           editable={!isLoading}
         />
 
-        {/* Password field */}
         <ThemedTextinput
           style={{ width: "80%", marginBottom: 20 }}
           placeholder="Password"
@@ -115,7 +114,6 @@ const Register = () => {
           editable={!isLoading}
         />
 
-        {/* Confirm Password field */}
         <ThemedTextinput
           style={{ width: "80%", marginBottom: 20 }}
           placeholder="Confirm Password"
@@ -125,12 +123,10 @@ const Register = () => {
           editable={!isLoading}
         />
 
-        {/* Password hint */}
         <ThemedText style={styles.passwordHint}>
           Password must be at least 6 characters long
         </ThemedText>
 
-        {/* Register Button */}
         <ThemedButton onPress={handleSubmit} disabled={isLoading}>
           {isLoading ? (
             <ActivityIndicator color="#f2f2f2" />
@@ -139,7 +135,6 @@ const Register = () => {
           )}
         </ThemedButton>
 
-        {/* Link to Login */}
         <Link href="/(auth)/login" asChild>
           <ThemedButton
             variant="secondary"
@@ -150,7 +145,6 @@ const Register = () => {
           </ThemedButton>
         </Link>
 
-        {/* Terms and conditions (optional) */}
         <ThemedText style={styles.termsText}>
           By registering, you agree to our Terms of Service and Privacy Policy
         </ThemedText>

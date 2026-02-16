@@ -2,7 +2,6 @@ import { StyleSheet } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useEffect } from "react";
 import * as Linking from "expo-linking";
-import Logo from "../assets/img/shelfie-2.jpg";
 import ThemedView from "../components/ThemedView";
 import ThemedLogo from "../components/ThemedLogo";
 import ThemedText from "../components/ThemedText";
@@ -34,7 +33,7 @@ export default function Index() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedLogo source={Logo} style={styles.Img} />
+      <ThemedLogo style={styles.Img} />
       <ThemedText style={styles.title}>Welcome to Shelfie 🔥</ThemedText>
       <ThemedText style={{ marginTop: 10 }}>
         My First Mobile Application As A Beginner
