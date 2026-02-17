@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export const UserContext = createContext();
@@ -8,12 +8,14 @@ export function UserProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Pehle current user check karo
     checkUser();
 
-    // Listen for auth state changes
+    // Auth changes suno
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", session?.user?.email);
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -21,16 +23,14 @@ export function UserProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check current user
   async function checkUser() {
     try {
       const {
         data: { user },
         error,
       } = await supabase.auth.getUser();
-
       if (error) throw error;
-
+      console.log("Current user:", user?.email);
       setUser(user);
     } catch (error) {
       console.log("Error checking user:", error.message);
@@ -40,10 +40,10 @@ export function UserProvider({ children }) {
     }
   }
 
-  // Login
   async function login(email, password) {
     try {
       setLoading(true);
+      console.log("Logging in with:", email);
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -52,6 +52,7 @@ export function UserProvider({ children }) {
 
       if (error) throw error;
 
+      console.log("Login successful:", data.user?.email);
       setUser(data.user);
       return { success: true, data };
     } catch (error) {
@@ -62,7 +63,6 @@ export function UserProvider({ children }) {
     }
   }
 
-  // Register
   async function register(email, password, name = "") {
     try {
       setLoading(true);
@@ -71,18 +71,14 @@ export function UserProvider({ children }) {
         email,
         password,
         options: {
-          data: {
-            name: name,
-          },
+          data: { name },
         },
       });
 
       if (error) throw error;
 
-      if (data.user) {
-        setUser(data.user);
-      }
-
+      console.log("Register successful:", data.user?.email);
+      setUser(data.user);
       return { success: true, data };
     } catch (error) {
       console.log("Register error:", error.message);
@@ -92,15 +88,13 @@ export function UserProvider({ children }) {
     }
   }
 
-  // Logout
   async function logout() {
     try {
       setLoading(true);
-
       const { error } = await supabase.auth.signOut();
-
       if (error) throw error;
 
+      console.log("Logout successful");
       setUser(null);
       return { success: true };
     } catch (error) {
@@ -108,39 +102,6 @@ export function UserProvider({ children }) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
-    }
-  }
-
-  // Reset Password Email
-  async function resetPassword(email) {
-    try {
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "shelfieapp://reset-password", // ✅ Correct Deep Link
-      });
-
-      if (error) throw error;
-
-      return { success: true, data };
-    } catch (error) {
-      console.log("Reset password error:", error.message);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Update Profile
-  async function updateProfile(updates) {
-    try {
-      const { data, error } = await supabase.auth.updateUser({
-        data: updates,
-      });
-
-      if (error) throw error;
-
-      setUser(data.user);
-      return { success: true, data };
-    } catch (error) {
-      console.log("Update profile error:", error.message);
-      return { success: false, error: error.message };
     }
   }
 
@@ -152,8 +113,6 @@ export function UserProvider({ children }) {
         login,
         register,
         logout,
-        resetPassword,
-        updateProfile,
       }}
     >
       {children}

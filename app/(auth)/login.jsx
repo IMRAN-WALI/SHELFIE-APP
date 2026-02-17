@@ -4,7 +4,7 @@ import {
   TouchableWithoutFeedback,
   Alert,
   ActivityIndicator,
-  View, // 👈 IMPORT ADD KARO
+  View, 
 } from "react-native";
 import ThemedView from "../../components/ThemedView";
 import ThemedText from "../../components/ThemedText";

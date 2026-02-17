@@ -7,11 +7,12 @@ import { useUser } from "../../hooks/useUser";
 import ThemedButton from "../../components/ThemedButton";
 
 const profile = () => {
-  const { logout } = useUser();
+  const { logout, user } = useUser();
+
   return (
     <ThemedView style={styles.container}>
       <ThemedText title={true} style={styles.heading}>
-        Your Email
+        {user?.email || "Your Email"}
       </ThemedText>
       <Spacer />
       <ThemedText>Time To Start Reading Some Books...</ThemedText>
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontWeight: "bold",
-    fontStyle: 18,
+    fontSize: 18,
     textAlign: "center",
   },
 });
