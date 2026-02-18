@@ -6,14 +6,15 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
+import { useState } from "react";
+import { router, Link } from "expo-router";
+import { supabase } from "../../lib/supabase";
+
 import ThemedView from "../../components/ThemedView";
 import ThemedText from "../../components/ThemedText";
-import Spacer from "../../components/Spacer";
-import { Link, router } from "expo-router";
 import ThemedButton from "../../components/ThemedButton";
 import ThemedTextinput from "../../components/ThemedTextinput";
-import { useState } from "react";
-import { supabase } from "../../lib/supabase";
+import Spacer from "../../components/Spacer";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -22,7 +23,9 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
-    // Validation
+    if (isLoading) return;
+
+    // Basic Validation
     if (!email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all required fields");
       return;
@@ -39,7 +42,7 @@ const Register = () => {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email.trim())) {
       Alert.alert("Error", "Please enter a valid email address");
       return;
     }
@@ -48,15 +51,22 @@ const Register = () => {
 
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: email.trim(),
+        password: password.trim(),
       });
 
       if (error) {
-        if (error.message.includes("User already registered")) {
+        const message = error.message.toLowerCase();
+
+        if (message.includes("rate limit")) {
+          Alert.alert(
+            "Too Many Attempts",
+            "You are trying too many times. Please wait a few minutes and try again.",
+          );
+        } else if (message.includes("already registered")) {
           Alert.alert(
             "Account Exists",
-            "An account with this email already exists. Please login instead.",
+            "This email is already registered. Please login instead.",
             [
               { text: "OK" },
               { text: "Login", onPress: () => router.push("/(auth)/login") },
@@ -65,22 +75,26 @@ const Register = () => {
         } else {
           Alert.alert("Registration Failed", error.message);
         }
+
         return;
       }
 
-      Alert.alert(
-        "Registration Successful",
-        "Your account has been created! Please check your email to verify your account.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.push("/(auth)/login"),
-          },
-        ],
-      );
+      // If user created successfully
+      if (data?.user) {
+        Alert.alert(
+          "Registration Successful",
+          "Your account has been created successfully!",
+          [
+            {
+              text: "Go to Login",
+              onPress: () => router.replace("/(auth)/login"),
+            },
+          ],
+        );
+      }
     } catch (err) {
-      Alert.alert("Error", "Something went wrong. Please try again.");
       console.log("Register error:", err);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -91,35 +105,35 @@ const Register = () => {
       <ThemedView style={styles.container}>
         <Spacer />
 
-        <ThemedText title={true} style={styles.title}>
+        <ThemedText title style={styles.title}>
           Create Account
         </ThemedText>
 
         <ThemedTextinput
-          style={{ width: "80%", marginBottom: 20 }}
+          style={styles.input}
           placeholder="Email"
           keyboardType="email-address"
           autoCapitalize="none"
-          onChangeText={setEmail}
           value={email}
+          onChangeText={setEmail}
           editable={!isLoading}
         />
 
         <ThemedTextinput
-          style={{ width: "80%", marginBottom: 20 }}
+          style={styles.input}
           placeholder="Password"
-          onChangeText={setPassword}
-          value={password}
           secureTextEntry
+          value={password}
+          onChangeText={setPassword}
           editable={!isLoading}
         />
 
         <ThemedTextinput
-          style={{ width: "80%", marginBottom: 20 }}
+          style={styles.input}
           placeholder="Confirm Password"
-          onChangeText={setConfirmPassword}
-          value={confirmPassword}
           secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
           editable={!isLoading}
         />
 
@@ -129,9 +143,9 @@ const Register = () => {
 
         <ThemedButton onPress={handleSubmit} disabled={isLoading}>
           {isLoading ? (
-            <ActivityIndicator color="#f2f2f2" />
+            <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={{ color: "#f2f2f2" }}>Register</Text>
+            <Text style={{ color: "#fff" }}>Register</Text>
           )}
         </ThemedButton>
 
@@ -168,11 +182,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontWeight: "bold",
   },
+  input: {
+    width: "80%",
+    marginBottom: 20,
+  },
   passwordHint: {
     fontSize: 12,
     color: "#666",
     marginBottom: 20,
-    textAlign: "left",
     width: "80%",
   },
   loginLink: {

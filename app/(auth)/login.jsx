@@ -4,7 +4,7 @@ import {
   TouchableWithoutFeedback,
   Alert,
   ActivityIndicator,
-  View, 
+  View,
 } from "react-native";
 import ThemedView from "../../components/ThemedView";
 import ThemedText from "../../components/ThemedText";
@@ -34,7 +34,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const result = await login(email, password);
+      const result = await login(email.trim(), password.trim());
 
       if (!result.success) {
         Alert.alert("Login Failed", result.error);
