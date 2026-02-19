@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useContext, useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
 import { UserContext } from "../../contexts/UserContext";
+import ThemedLoader from "../ThemedLoader";
 
 const GuestOnly = ({ children }) => {
   const { user, loading } = useContext(UserContext);
@@ -16,12 +16,7 @@ const GuestOnly = ({ children }) => {
 
   // Jab tak Supabase check kar raha hai
   if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 10 }}>Checking Authentication...</Text>
-      </View>
-    );
+    return <ThemedLoader />;
   }
 
   // Agar user logged in hai to kuch render mat karo (redirect ho raha hoga)

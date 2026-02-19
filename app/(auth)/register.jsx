@@ -9,7 +9,6 @@ import {
 import { useState } from "react";
 import { router, Link } from "expo-router";
 import { supabase } from "../../lib/supabase";
-
 import ThemedView from "../../components/ThemedView";
 import ThemedText from "../../components/ThemedText";
 import ThemedButton from "../../components/ThemedButton";
@@ -79,7 +78,6 @@ const Register = () => {
         return;
       }
 
-      // If user created successfully
       if (data?.user) {
         Alert.alert(
           "Registration Successful",

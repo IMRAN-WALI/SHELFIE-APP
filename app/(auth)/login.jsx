@@ -43,7 +43,7 @@ const Login = () => {
 
       // Login successful
       console.log("Login successful:", result.data.user);
-      router.replace("/(tabs)");
+      router.replace("/");
     } catch (error) {
       Alert.alert("Error", error.message || "An unexpected error occurred");
       console.log("Login error:", error);
