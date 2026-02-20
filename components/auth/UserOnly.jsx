@@ -14,7 +14,6 @@ const UserOnly = ({ children }) => {
     }
   }, [user, loading]);
 
-  // Jab tak Supabase user check kar raha hai
   if (loading) {
     return <ThemedLoader />;
   }

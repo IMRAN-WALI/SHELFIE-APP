@@ -14,7 +14,6 @@ const GuestOnly = ({ children }) => {
     }
   }, [user, loading]);
 
-  // Jab tak Supabase check kar raha hai
   if (loading) {
     return <ThemedLoader />;
   }
