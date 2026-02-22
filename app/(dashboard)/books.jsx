@@ -1,125 +1,66 @@
-import React, { useEffect, useState, useContext } from "react";
-import {
-  StyleSheet,
-  FlatList,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import React from "react";
+import { StyleSheet, FlatList, Pressable, Alert } from "react-native";
 import ThemedView from "../../components/ThemedView";
 import ThemedText from "../../components/ThemedText";
 import Spacer from "../../components/Spacer";
-import { BooksContext } from "../../contexts/BooksContext";
+import { useBooks } from "../../hooks/useBooks";
+import ThemedCard from "../../components/ThemedCard";
+import { Colors } from "../../constants/Colors";
 
 const Books = () => {
-  // Context se sab kuch le rahe hain
-  const { books, loading, fetchBooks, createBook, deleteBook } =
-    useContext(BooksContext);
+  const { books, loading, deleteBook } = useBooks();
 
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    fetchBooks();
-  }, []);
-
-  // ➕ Add Book
-  const handleAddBook = async () => {
-    if (!title.trim() || !author.trim()) {
-      Alert.alert("Error", "Please fill all fields");
-      return;
-    }
-
-    setSubmitting(true);
-    const success = await createBook({
-      title: title.trim(),
-      author: author.trim(),
-    });
-
-    if (success) {
-      setTitle("");
-      setAuthor("");
-    }
-    setSubmitting(false);
+  const handleLongPress = (id) => {
+    Alert.alert("Delete Book", "Do you want to delete this book?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => deleteBook(id),
+      },
+    ]);
   };
 
-  // ❌ Delete Book with confirmation
-  const handleDeleteBook = (id, bookTitle) => {
-    Alert.alert(
-      "Delete Book",
-      `Are you sure you want to delete "${bookTitle}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          onPress: () => deleteBook(id),
-          style: "destructive",
-        },
-      ],
+  if (loading) {
+    return (
+      <ThemedView style={styles.container} safe>
+        <ThemedText>Loading...</ThemedText>
+      </ThemedView>
     );
-  };
+  }
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText title={true} style={styles.heading}>
-        Your Books
+    <ThemedView style={styles.container} safe>
+      <Spacer />
+
+      <ThemedText title style={styles.heading}>
+        Your Reading List
       </ThemedText>
 
       <Spacer />
 
-      {/* Input Fields */}
-      <TextInput
-        placeholder="Book Title"
-        style={styles.input}
-        value={title}
-        onChangeText={setTitle}
-        editable={!submitting}
-      />
-      <TextInput
-        placeholder="Author Name"
-        style={styles.input}
-        value={author}
-        onChangeText={setAuthor}
-        editable={!submitting}
-      />
-
-      <TouchableOpacity
-        style={[styles.addButton, submitting && styles.disabledButton]}
-        onPress={handleAddBook}
-        disabled={submitting}
-      >
-        {submitting ? (
-          <ActivityIndicator color="white" size="small" />
-        ) : (
-          <ThemedText style={styles.buttonText}>Add Book</ThemedText>
+      <FlatList
+        data={books}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <ThemedText style={styles.emptyText}>
+            No books added yet 📚
+          </ThemedText>
+        }
+        renderItem={({ item }) => (
+          <Pressable
+            onLongPress={() => handleLongPress(item.id)}
+            android_ripple={{ color: "#ccc" }}
+          >
+            <ThemedCard style={styles.card}>
+              <ThemedText style={styles.title}>{item.title}</ThemedText>
+              <ThemedText>Written By {item.author}</ThemedText>
+            </ThemedCard>
+          </Pressable>
         )}
-      </TouchableOpacity>
-
-      <Spacer />
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#6849a7" />
-      ) : books.length === 0 ? (
-        <ThemedText style={styles.emptyText}>No books added yet 📚</ThemedText>
-      ) : (
-        <FlatList
-          data={books}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.bookItem}
-              onPress={() => handleDeleteBook(item.id, item.title)}
-              activeOpacity={0.7}
-            >
-              <ThemedText style={styles.bookTitle}>{item.title}</ThemedText>
-              <ThemedText style={styles.bookAuthor}>{item.author}</ThemedText>
-            </TouchableOpacity>
-          )}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      />
     </ThemedView>
   );
 };
@@ -136,51 +77,27 @@ const styles = StyleSheet.create({
     fontSize: 22,
     textAlign: "center",
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 12,
-    marginBottom: 10,
-    borderRadius: 8,
-    fontSize: 16,
+  list: {
+    marginTop: 30,
+    paddingBottom: 40,
   },
-  addButton: {
-    backgroundColor: "#6849a7",
-    padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 5,
+  card: {
+    width: "90%",
+    marginHorizontal: "5%",
+    padding: 18,
+    marginBottom: 15,
+    borderLeftColor: Colors.primary,
+    borderLeftWidth: 4,
+    borderRadius: 10,
   },
-  disabledButton: {
-    backgroundColor: "#a58bd1",
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: "white",
+  title: {
+    fontSize: 18,
     fontWeight: "bold",
-    fontSize: 16,
-  },
-  bookItem: {
-    padding: 15,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 8,
-    marginBottom: 10,
-    backgroundColor: "#f9f9f9",
-  },
-  bookTitle: {
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  bookAuthor: {
-    fontSize: 14,
-    color: "#666",
+    marginBottom: 5,
   },
   emptyText: {
     textAlign: "center",
-    marginTop: 20,
+    marginTop: 50,
     fontSize: 16,
-    color: "#666",
   },
 });

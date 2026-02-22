@@ -106,7 +106,7 @@ export function BooksProvider({ children }) {
         if (error) throw error;
 
         Alert.alert("Success", "Book deleted successfully!");
-        await fetchBooks(); // refresh list
+        await fetchBooks();
         return true;
       } catch (error) {
         console.error("Delete Book Error:", error.message);
